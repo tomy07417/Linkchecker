@@ -45,7 +45,7 @@ fn read_file(path: &Path) -> Result<String, CustomError> {
         }
 
     fs::read_to_string(path).
-        map_err(|_e| CustomError::FileReadError(path.to_string_lossy().to_string()).into())
+        map_err(|_e| CustomError::FileReadError(path.to_string_lossy().to_string()))
 }
 
 #[cfg(test)]
