@@ -1,6 +1,6 @@
+use crate::custom_errors::CustomError;
 use regex::Regex;
 use std::{collections::HashSet, fs, path::Path};
-use crate::custom_errors::CustomError;
 
 /// Extracts unique URLs from a text file.
 ///
@@ -20,7 +20,7 @@ pub fn extract_urls_from_input(path: &Path) -> Result<Vec<String>, CustomError> 
     let mut urls_seen = HashSet::new();
     let mut urls = Vec::new();
 
-    for cap in re.find_iter(&list_of_urls){
+    for cap in re.find_iter(&list_of_urls) {
         let url = cap.as_str().to_string();
 
         if urls_seen.insert(url.clone()) {
@@ -38,26 +38,28 @@ pub fn extract_urls_from_input(path: &Path) -> Result<Vec<String>, CustomError> 
 /// Returns `CustomError::FileNotExist` if the file does not exist and
 /// `CustomError::FileReadError` if the file cannot be read.
 fn read_file(path: &Path) -> Result<String, CustomError> {
+    if !fs::exists(path).map_err(|_e| {
+        CustomError::UnexpectedError("Unexpected error while reading file".to_string())
+    })? {
+        return Err(CustomError::FileNotExist(
+            path.to_string_lossy().to_string(),
+        ));
+    }
 
-    if !fs::exists(path).
-        map_err(|_e| CustomError::UnexpectedError("Unexpected error while reading file".to_string()))? {
-        return Err(CustomError::FileNotExist(path.to_string_lossy().to_string()));
-        }
-
-    fs::read_to_string(path).
-        map_err(|_e| CustomError::FileReadError(path.to_string_lossy().to_string()))
+    fs::read_to_string(path)
+        .map_err(|_e| CustomError::FileReadError(path.to_string_lossy().to_string()))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(unix)]
+    use std::os::unix::fs::PermissionsExt;
     use std::{
         fs,
         path::PathBuf,
         time::{SystemTime, UNIX_EPOCH},
     };
-    #[cfg(unix)]
-    use std::os::unix::fs::PermissionsExt;
 
     fn temp_path(name: &str) -> PathBuf {
         let mut path = std::env::temp_dir();
@@ -163,5 +165,4 @@ mod tests {
         let _ = fs::set_permissions(&path, perms);
         let _ = fs::remove_file(&path);
     }
-
 }
