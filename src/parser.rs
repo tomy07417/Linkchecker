@@ -93,7 +93,7 @@ mod tests {
             urls,
             vec![
                 "https://www.rust-lang.org".to_string(),
-                "https://www.google.com)".to_string(),
+                "https://www.google.com".to_string(),
                 "https://this-link-does-not-exist.xyz".to_string(),
             ],
             "should return unique urls preserving first-seen order"
