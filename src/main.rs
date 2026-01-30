@@ -32,9 +32,7 @@ async fn main() {
         let cli = client.clone();
 
         let handle = tokio::spawn(async move {
-            let result = request::fetch_data(url_cp, smp, cli).await;
-
-            result
+            request::fetch_data(url_cp, smp, cli).await
         });
         handles.push((url, handle));
     }
@@ -48,10 +46,10 @@ async fn main() {
             inspect_err(|e| {
                 eprintln!("[{}] {}", e, url);
             }).
-            and_then(|res| {
+            map(|res| {
                 response.push(res);
                 
-                Ok(())
+                ()
             });
     }
 
