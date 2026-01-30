@@ -4,6 +4,17 @@ use tokio::sync::Semaphore;
 
 use crate::custom_errors::CustomError;
 
+/// Fetches a URL while respecting the provided concurrency limit.
+///
+/// The request is executed with the given `client` and guarded by the
+/// `semaphore` to cap concurrent requests. If the response status is not
+/// successful, the function returns `RequestResponse::HttpError` with the
+/// status code. On success, it returns `RequestResponse::Ok` with the body.
+///
+/// # Errors
+///
+/// Returns `CustomError::UnexpectedError` when acquiring a permit, sending the
+/// request, or reading the response body fails.
 pub async fn fetch_data(
     url: String,
     semaphore: Arc<Semaphore>,
@@ -34,6 +45,7 @@ pub async fn fetch_data(
     Ok(RequestResponse::Ok { title: body })
 }
 
+/// Result of an HTTP request performed by `fetch_data`.
 #[derive(Debug)]
 pub enum RequestResponse {
     Ok { title: String },
