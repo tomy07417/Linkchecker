@@ -38,9 +38,7 @@ pub fn extract_urls_from_input(path: &Path) -> Result<Vec<String>, CustomError> 
 /// Returns `CustomError::FileNotExist` if the file does not exist and
 /// `CustomError::FileReadError` if the file cannot be read.
 fn read_file(path: &Path) -> Result<String, CustomError> {
-    if !fs::exists(path).map_err(|_e| {
-        CustomError::UnexpectedError
-    })? {
+    if !fs::exists(path).map_err(|_e| CustomError::UnexpectedError)? {
         return Err(CustomError::FileNotExist(
             path.to_string_lossy().to_string(),
         ));

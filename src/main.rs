@@ -31,24 +31,23 @@ async fn main() {
         let smp = semaphore.clone();
         let cli = client.clone();
 
-        let handle = tokio::spawn(async move {
-            request::fetch_data(url_cp, smp, cli).await
-        });
+        let handle = tokio::spawn(async move { request::fetch_data(url_cp, smp, cli).await });
         handles.push((url, handle));
     }
 
-    let mut response:Vec<request::RequestResponse> = Vec::new();
+    let mut response: Vec<request::RequestResponse> = Vec::new();
 
     for (url, handle) in handles {
-        let _ = handle.await.
-            map_err(|_e| CustomError::UnexpectedError).
-            and_then(|res| res).
-            inspect_err(|e| {
+        let _ = handle
+            .await
+            .map_err(|_e| CustomError::UnexpectedError)
+            .and_then(|res| res)
+            .inspect_err(|e| {
                 eprintln!("[{}] {}", e, url);
-            }).
-            map(|res| {
+            })
+            .map(|res| {
                 response.push(res);
-                
+
                 ()
             });
     }

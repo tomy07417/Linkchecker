@@ -4,33 +4,40 @@ use tokio::sync::Semaphore;
 
 use crate::custom_errors::CustomError;
 
-pub async fn fetch_data(url: String, semaphore: Arc<Semaphore>, client: reqwest::Client) -> Result<RequestResponse, CustomError> {
-    let _permit = semaphore.acquire().
-        await.
-        map_err(|_e| CustomError::UnexpectedError)?;
+pub async fn fetch_data(
+    url: String,
+    semaphore: Arc<Semaphore>,
+    client: reqwest::Client,
+) -> Result<RequestResponse, CustomError> {
+    let _permit = semaphore
+        .acquire()
+        .await
+        .map_err(|_e| CustomError::UnexpectedError)?;
 
-    let resp = client.get(url).send().await.
-        map_err(|_e| CustomError::UnexpectedError)?;
+    let resp = client
+        .get(url)
+        .send()
+        .await
+        .map_err(|_e| CustomError::UnexpectedError)?;
 
     if !resp.status().is_success() {
-        return Ok(
-            RequestResponse::HttpError{code: resp.status().as_u16()}
-        );
+        return Ok(RequestResponse::HttpError {
+            code: resp.status().as_u16(),
+        });
     }
 
-    let body = resp.text().await.
-        map_err(|_e| CustomError::UnexpectedError)?;
+    let body = resp
+        .text()
+        .await
+        .map_err(|_e| CustomError::UnexpectedError)?;
 
-    Ok(
-        RequestResponse::Ok{title: body}
-    )
+    Ok(RequestResponse::Ok { title: body })
 }
 
 #[derive(Debug)]
 pub enum RequestResponse {
-    Ok{title: String},
-    HttpError{code: u16},
-
+    Ok { title: String },
+    HttpError { code: u16 },
 }
 
 #[cfg(test)]
