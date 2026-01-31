@@ -2,7 +2,7 @@ use std::error::Error;
 
 #[derive(Debug)]
 pub enum CustomError {
-    UnexpectedError(String),
+    UnexpectedError,
     FileNotExist(String),
     FileReadError(String),
 }
@@ -12,7 +12,7 @@ impl std::fmt::Display for CustomError {
         match self {
             CustomError::FileNotExist(msg) => write!(f, "File does not exist: {}", msg),
             CustomError::FileReadError(msg) => write!(f, "Failed to read file: {}", msg),
-            CustomError::UnexpectedError(msg) => write!(f, "Unexpected error: {}", msg),
+            CustomError::UnexpectedError => write!(f, "Unexpected error occurred"),
         }
     }
 }

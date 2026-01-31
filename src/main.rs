@@ -1,7 +1,14 @@
+use std::sync::Arc;
+
+use crate::custom_errors::CustomError;
+
 mod custom_errors;
 mod parser;
+mod request;
+mod scraper;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let args = std::env::args().collect::<Vec<String>>();
     if args.len() != 2 {
         eprintln!("Usage: {} <file_path>", args[0]);
@@ -15,5 +22,36 @@ fn main() {
         std::process::exit(1);
     });
 
-    println!("Extracted URLs: {:?}", urls);
+    let semaphore = Arc::new(tokio::sync::Semaphore::new(32));
+    let client = reqwest::Client::new();
+
+    let mut handles = Vec::new();
+
+    for url in urls {
+        let url_cp = url.clone();
+        let smp = semaphore.clone();
+        let cli = client.clone();
+
+        let handle = tokio::spawn(async move { request::fetch_data(url_cp, smp, cli).await });
+        handles.push((url, handle));
+    }
+
+    let mut response = Vec::new();
+
+    for (url, handle) in handles {
+        let _ = handle
+            .await
+            .map_err(|_e| CustomError::UnexpectedError)
+            .and_then(|res| res)
+            .inspect_err(|e| {
+                eprintln!("[{}] {}", e, url);
+            })
+            .map(|res| {
+                response.push((url.clone(), res));
+            });
+    }
+
+    for (url, res) in response {
+        println!("[{}] {}", res, url);
+    }
 }
