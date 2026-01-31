@@ -11,9 +11,9 @@ pub fn write_output_file(
         map_err(|_| CustomError::FileWriteError(format!("Error writing file: {}", path.display())))?;
 
     for (url, res) in content {
-        write!(
+        writeln!(
             file,
-            "[{}] ({})\n",
+            "[{}] ({})",
             res,
             url
         ).map_err(|_| CustomError::FileWriteError(format!("Error writing to file: {}", path.display())))?;
