@@ -33,15 +33,13 @@ pub async fn fetch_data(
         .map_err(|_e| CustomError::UnexpectedError)?;
 
     if !resp.status().is_success() {
+        let reason = resp
+            .status()
+            .canonical_reason()
+            .map(|s| s.to_string())
+            .unwrap_or_else(|| format!("HTTP {}", resp.status().as_u16()));
 
-        let reason = resp.status().
-                canonical_reason().
-                map(|s| s.to_string()).
-                unwrap_or_else(|| format!("HTTP {}", resp.status().as_u16()));
-
-        return Ok(RequestResponse::HttpError {
-            reason,
-        });
+        return Ok(RequestResponse::HttpError { reason });
     }
 
     let body = resp
