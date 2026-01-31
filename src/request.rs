@@ -78,7 +78,8 @@ mod tests {
         let server = MockServer::start();
         let _mock = server.mock(|when, then| {
             when.method(GET).path("/ok");
-            then.status(200).body("hello world");
+            then.status(200)
+                .body("<!doctype html><html><head><title>Hello Title</title></head><body>hello world</body></html>");
         });
 
         let url = server.url("/ok");
@@ -88,7 +89,7 @@ mod tests {
         let result = fetch_data(url, semaphore, client).await;
 
         match result {
-            Ok(RequestResponse::Ok { title }) => assert_eq!(title, "hello world"),
+            Ok(RequestResponse::Ok { title }) => assert_eq!(title, "Hello Title"),
             _ => panic!("expected Ok response"),
         }
     }
