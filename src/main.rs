@@ -5,6 +5,7 @@ use crate::custom_errors::CustomError;
 mod custom_errors;
 mod parser;
 mod request;
+mod scraper;
 
 #[tokio::main]
 async fn main() {
@@ -35,7 +36,7 @@ async fn main() {
         handles.push((url, handle));
     }
 
-    let mut response: Vec<request::RequestResponse> = Vec::new();
+    let mut response = Vec::new();
 
     for (url, handle) in handles {
         let _ = handle
@@ -46,12 +47,13 @@ async fn main() {
                 eprintln!("[{}] {}", e, url);
             })
             .map(|res| {
-                response.push(res);
+                response.push((url.clone(), res));
 
                 ()
             });
     }
 
-    println!("Responses: {:?}", response.len());
-    println!("{:?}", response);
+    for (url, res) in response {
+        println!("[{}] {}", res, url);
+    }
 }
