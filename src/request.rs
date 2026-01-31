@@ -3,6 +3,7 @@ use std::sync::Arc;
 use tokio::sync::Semaphore;
 
 use crate::custom_errors::CustomError;
+use crate::scraper::extract_title;
 
 /// Fetches a URL while respecting the provided concurrency limit.
 ///
@@ -32,9 +33,13 @@ pub async fn fetch_data(
         .map_err(|_e| CustomError::UnexpectedError)?;
 
     if !resp.status().is_success() {
-        return Ok(RequestResponse::HttpError {
-            code: resp.status().as_u16(),
-        });
+        let reason = resp
+            .status()
+            .canonical_reason()
+            .map(|s| s.to_string())
+            .unwrap_or_else(|| format!("HTTP {}", resp.status().as_u16()));
+
+        return Ok(RequestResponse::HttpError { reason });
     }
 
     let body = resp
@@ -42,14 +47,25 @@ pub async fn fetch_data(
         .await
         .map_err(|_e| CustomError::UnexpectedError)?;
 
-    Ok(RequestResponse::Ok { title: body })
+    let title = extract_title(&body).unwrap_or_else(|| "No title found".to_string());
+
+    Ok(RequestResponse::Ok { title })
 }
 
 /// Result of an HTTP request performed by `fetch_data`.
 #[derive(Debug)]
 pub enum RequestResponse {
     Ok { title: String },
-    HttpError { code: u16 },
+    HttpError { reason: String },
+}
+
+impl std::fmt::Display for RequestResponse {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            RequestResponse::Ok { title } => write!(f, "{}", title),
+            RequestResponse::HttpError { reason } => write!(f, "{}", reason),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -62,7 +78,8 @@ mod tests {
         let server = MockServer::start();
         let _mock = server.mock(|when, then| {
             when.method(GET).path("/ok");
-            then.status(200).body("hello world");
+            then.status(200)
+                .body("<!doctype html><html><head><title>Hello Title</title></head><body>hello world</body></html>");
         });
 
         let url = server.url("/ok");
@@ -72,7 +89,7 @@ mod tests {
         let result = fetch_data(url, semaphore, client).await;
 
         match result {
-            Ok(RequestResponse::Ok { title }) => assert_eq!(title, "hello world"),
+            Ok(RequestResponse::Ok { title }) => assert_eq!(title, "Hello Title"),
             _ => panic!("expected Ok response"),
         }
     }
@@ -92,7 +109,7 @@ mod tests {
         let result = fetch_data(url, semaphore, client).await;
 
         match result {
-            Ok(RequestResponse::HttpError { code }) => assert_eq!(code, 404),
+            Ok(RequestResponse::HttpError { reason }) => assert_eq!(reason, "Not Found"),
             _ => panic!("expected HttpError response"),
         }
     }

@@ -7,7 +7,7 @@ test:
 	cargo test
 
 run:
-	cargo run -- $(path)
+	cargo run -- $(input) $(output)
 
 clean:
 	cargo clean

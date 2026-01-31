@@ -1,20 +1,23 @@
-use std::sync::Arc;
+use std::{path::Path, sync::Arc};
 
 use crate::custom_errors::CustomError;
 
 mod custom_errors;
+mod output;
 mod parser;
 mod request;
+mod scraper;
 
 #[tokio::main]
 async fn main() {
     let args = std::env::args().collect::<Vec<String>>();
-    if args.len() != 2 {
-        eprintln!("Usage: {} <file_path>", args[0]);
+    if args.len() != 3 {
+        eprintln!("Usage: {} <input_file_path> <output_file_path>", args[0]);
         std::process::exit(1);
     }
 
-    let file_path = std::path::Path::new(&args[1]);
+    let file_path = Path::new(&args[1]);
+    let output_path = Path::new(&args[2]);
 
     let urls: Vec<String> = parser::extract_urls_from_input(file_path).unwrap_or_else(|e| {
         eprintln!("Error: {}", e);
@@ -35,7 +38,7 @@ async fn main() {
         handles.push((url, handle));
     }
 
-    let mut response: Vec<request::RequestResponse> = Vec::new();
+    let mut response = Vec::new();
 
     for (url, handle) in handles {
         let _ = handle
@@ -46,12 +49,12 @@ async fn main() {
                 eprintln!("[{}] {}", e, url);
             })
             .map(|res| {
-                response.push(res);
-
-                ()
+                response.push((url.clone(), res));
             });
     }
 
-    println!("Responses: {:?}", response.len());
-    println!("{:?}", response);
+    if let Err(e) = output::write_output_file(output_path, response) {
+        eprintln!("Error writing output file: {}", e);
+        std::process::exit(1);
+    }
 }
