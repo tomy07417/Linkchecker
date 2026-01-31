@@ -5,6 +5,7 @@ pub enum CustomError {
     UnexpectedError,
     FileNotExist(String),
     FileReadError(String),
+    FileWriteError(String),
 }
 
 impl std::fmt::Display for CustomError {
@@ -12,6 +13,7 @@ impl std::fmt::Display for CustomError {
         match self {
             CustomError::FileNotExist(msg) => write!(f, "File does not exist: {}", msg),
             CustomError::FileReadError(msg) => write!(f, "Failed to read file: {}", msg),
+            CustomError::FileWriteError(msg) => write!(f, "Failed to write file: {}", msg),
             CustomError::UnexpectedError => write!(f, "Unexpected error occurred"),
         }
     }

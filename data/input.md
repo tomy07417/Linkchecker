@@ -1,3 +1,10 @@
-- https://www.rust-lang.org
-- [Search](https://www.google.com)
-- https://this-link-does-not-exist.xyz
+https://www.wikipedia.org/
+https://www.mozilla.org/
+https://www.rust-lang.org/
+https://www.gnu.org/
+https://www.kernel.org/
+https://www.python.org/
+https://www.postgresql.org/
+https://www.debian.org/
+https://www.ietf.org/
+https://www.example.com/
