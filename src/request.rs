@@ -40,7 +40,7 @@ pub async fn fetch_data(
                 unwrap_or_else(|| format!("HTTP {}", resp.status().as_u16()));
 
         return Ok(RequestResponse::HttpError {
-            reason: reason,
+            reason,
         });
     }
 
@@ -51,7 +51,7 @@ pub async fn fetch_data(
 
     let title = extract_title(&body).unwrap_or_else(|| "No title found".to_string());
 
-    Ok(RequestResponse::Ok { title: title })
+    Ok(RequestResponse::Ok { title })
 }
 
 /// Result of an HTTP request performed by `fetch_data`.

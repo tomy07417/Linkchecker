@@ -48,8 +48,6 @@ async fn main() {
             })
             .map(|res| {
                 response.push((url.clone(), res));
-
-                ()
             });
     }
 
