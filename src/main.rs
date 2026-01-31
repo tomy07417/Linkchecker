@@ -3,10 +3,10 @@ use std::{path::Path, sync::Arc};
 use crate::custom_errors::CustomError;
 
 mod custom_errors;
+mod output;
 mod parser;
 mod request;
 mod scraper;
-mod output;
 
 #[tokio::main]
 async fn main() {
