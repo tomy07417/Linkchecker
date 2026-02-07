@@ -38,3 +38,33 @@ This project implements a command-line tool that:
 [Google](https://www.google.com)
 [Not Found](https://this-link-does-not-exist.xyz)
 ```
+
+---
+
+## 🚀 Usage
+
+```bash
+cargo run -- data/input.md data/output.md
+```
+
+Or with the Makefile:
+
+```bash
+make run input=data/input.md output=data/output.md
+```
+
+---
+
+## 🧾 Input Format
+
+The input file can be any Markdown (or plain text) content. The parser scans for
+URLs that start with `http://` or `https://` anywhere in the text and keeps the
+first occurrence of each URL (duplicates are ignored).
+
+Example (one URL per line works great too):
+
+```md
+https://www.rust-lang.org/
+https://www.mozilla.org/
+https://www.kernel.org/
+```
